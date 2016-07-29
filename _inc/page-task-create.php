@@ -23,6 +23,7 @@
 				<th scope="row"><label for="keyw">Keyword: </label></th>
 				<td>
 				<input type="text" name="keyw" id="keyw" value="" placeholder="Keyword(s)" class="regular-text" required>
+				<input type="text" name="city" id="city" value="" placeholder="City" class="regularc-text" required>
 				</td>
 			</tr>
 			
@@ -48,15 +49,18 @@
 			<tr>
 				<th scope="row"><label for="keyw">State </label></th>
 				<td>
-					<input type="text" name="state" id="state" value="" placeholder="State" class="regular-text" required>
+					<select name="state" id="state" class="regular-text" required>
+					<option value ="">NA</option>
+					</select>
 				</td>
 			</tr>
+			
 			
 			<tr>
 				<th scope="row"> </th>
 				<td>
-					<input type="text" name="task_id" id="task_id" value="0" ><br/>
-					<input type="text" name="next_token" id="next_token" value="" ><br/>
+					<input type="hidden" name="task_id" id="task_id" value="0" ><br/>
+					<input type="hidden" name="next_token" id="next_token" value="" ><br/>
 					<input type="button" name="search_now" id="search_now" value="Run Task Now!" class="button button-primary">
 				</td>
 			</tr>
@@ -65,11 +69,6 @@
 		
 	
 	
-	
-
-		
-		
-		
 		
 	</form>
 	
@@ -107,7 +106,69 @@
 
 <script>
 	jQuery(document).ready(function($) {
+
+	
 		var CurrentPage = 1;
+		var eroRdorNew = '';
+		
+		
+		 //$('#country').val('US');
+		 //$('#country').trigger('onchange');
+		
+		$('#country').on('change',function() {
+		
+		
+			var t_state = $('#state');
+			if( $(this).val() == '') return false;
+			if( $(this).val() == 'NA') return false;
+			
+			/* 
+			$.each(newOptions, function(val, text) {
+				options[options.length] = new Option(text, val);
+			}); */
+			
+			if(t_state.prop) {
+			  var options = t_state.prop('options');
+			}
+			else {
+			  var options = t_state.attr('options');
+			}
+			
+			
+			$.ajax({
+				url: '<?php echo admin_url('admin-ajax.php');?>' ,
+				data: {
+					country: $('#country').val(),
+					action: 'request_states'
+				},
+				beforeSend: function( xhr ) {
+					$('option', t_state).remove();
+				},
+				error: function() {
+					//$('#task-info-error').html('<p>An error has occurred</p>');
+					//$('#task-info-error').css('display','block');
+				},
+				success: function(data) {
+					
+					
+					var newOptions = jQuery.parseJSON(data); 
+					console.log(newOptions);
+					
+					$.each(newOptions, function(val, text) {
+						options[options.length] = new Option(text, text);
+					});
+ 
+
+						
+						
+					
+				},type: 'POST'
+			});
+				
+		
+			
+			console.log('request state');
+		});
 		
 		
 		$('#search_now').on('click',function() {
@@ -124,6 +185,7 @@
 					url: '<?php echo admin_url('admin-ajax.php');?>' ,
 					data: {
 						keywords: $('#keyw').val(),
+						city: $('#city').val(),
 						state: $('#state').val(),
 						task_id: $('#task_id').val(),
 						country: $('#country').val(),
@@ -205,7 +267,7 @@
 										//}, 60000);
 									//}, 60000);
 								}, 60000);
-							}, 60000);
+							}, 10000);
 							
 						}else if(retReq.next == null || retReq.next == ''){
 							console.log('Getting All company Info');
@@ -252,7 +314,7 @@
 							
 							return;
 						}else{
-							$('#task-info-error').html('<p>Erro: Retry Max : '+ this.retryLimit+'</p>');
+							$('#task-info-error').html('<p>Error: Retry Max : '+ this.retryLimit+'</p>');
 						}
 						return;
 					}
@@ -290,6 +352,9 @@
 					}
 					
 					$('#task-current').html('<i class="fa fa-check"></i>DONE');
+					$('#task-info-error').html('');
+					$('#task-info-error').css('display','none');
+
 					return;
 				},
 				type: 'POST'
@@ -305,54 +370,3 @@
 	
 	
 </script>
-<?php
-
-
-if(isset($_GET['run'])){
-	company::search_save('web development', 'dallas', 'us');
-
-
-}
-
-
-//echo "https://maps.googleapis.com/maps/api/place/details/xml?reference=&key=". GMINER_API_SECRET;
-
-
-//https://maps.googleapis.com/maps/api/place/details/json?reference=CmRYAAAAciqGsTRX1mXRvuXSH2ErwW-jCINE1aLiwP64MCWDN5vkXvXoQGPKldMfmdGyqWSpm7BEYCgDm-iv7Kc2PF7QA7brMAwBbAcqMr5i1f4PwTpaovIZjysCEZTry8Ez30wpEhCNCXpynextCld2EBsDkRKsGhSLayuRyFsex6JA6NPh9dyupoTH3g&key='.GMINER_API_SECRET
-	/* $_url_req = "https://maps.googleapis.com/maps/api/place/textsearch/json?query=".$q."&key=". GMINER_API_SECRET;
-	$result = wp_remote_get($_url_req, true);
-	$decode = json_decode($result['body'], true);
-	$results = $decode['results'];
-	$status = $decode['status'];
-
-	
-	https://maps.googleapis.com/maps/api/place/textsearch/json?query=Web+Development+in+California,+US&key=AIzaSyAXrE0S5VI2HixjIzs3NQuXwOuvLzBUNzQ
-
-	if($status != 'OK'){
-		echo 'Error Status: '.$status;
-		exit;
-	} */
-	//print_r(	$_url_req);	
-	echo '<pre>';
-/* 
-	$_max = 5;
-	$x=0;
-	foreach ($results as $_result) {
-		echo $_result['name'].'<br/>';
-		echo $_result['reference'];
-		echo "<br/>";
-		if(company::is_exist($_result['reference']) == false){
-			
-			//company->add($_result['reference'])
-			echo 'Add---';
-		}else{
-			echo 'minus---';
-		}
-		
-		if($x>= $_max){
-			break;
-		}
-		$x++;
-	} */
- 
-

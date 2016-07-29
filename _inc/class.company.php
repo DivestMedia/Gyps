@@ -24,9 +24,9 @@ class company{
 		}
 		return false;
 	}
-	public function company_exist($_name , $_address ){
+	public function company_exist($_name , $_location ){
 		global $wpdb;
-		$_found = $wpdb->get_var("SELECT ID FROM ".GMINER_TBL_COMPANY." WHERE company_name='".$_name."' AND address='".$_address."'");
+		$_found = $wpdb->get_var("SELECT ID FROM ".GMINER_TBL_COMPANY." WHERE company_name='".$_name."' AND location='".$_location."'");
 		if($_found){
 			return $_found;
 		}
@@ -64,11 +64,12 @@ class company{
 	
 	
 	
-	public function search_save($_keyword, $_state, $_country = 'US', $_taskID =0, $_pageToken = '', $_saveDB = true,$_full = false){
+	public function search_save($_keyword, $_state, $_country = 'US', $_taskID =0, $_pageToken = '', $_saveDB = true,$_full = false, $_city = ''){
 		
 		
 		$_keyword_user = $_keyword;
-		$_keyword = str_replace(' ','+',$_keyword  . ' in '. $_state .','. $_country);
+		$_city_q = empty($_city) ? '' : $_city . ',';
+		$_keyword = str_replace(' ','+',$_keyword  . ' in '. $_city_q . $_state .','. $_country);
 		$q = $_keyword ;
 		
 		
@@ -77,8 +78,9 @@ class company{
 			
 			$order   = array("\r\n", "\n", "\r");
 			$_pageToken = str_replace($order, '', $_pageToken);
-			$_pageTokenLink = '&pagetoken='.$_pageToken;
+			$_pageTokenLink = '&pagetoken='.$_pageToken.'&sensor=true';
 			
+			//$_pageTokenLink = '&nextpage='.$_pageToken.'&sensor=true';
 			$_url_req = "https://maps.googleapis.com/maps/api/place/textsearch/json?key=". GMINER_API_SECRET . $_pageTokenLink;
 			
 		}else{
@@ -149,14 +151,19 @@ class company{
 					'date_added' => date("Y-m-d H:i:s")
 				);
 				
-				$_companyID = company::company_exist($_result['name'] , $_result['formatted_address']) ;
+				
+				$_loc = @$_result['geometry']['location'];
+				$_latlang = $_loc['lat'] .','. $_loc['lng'];
+			
+				$_companyID = company::company_exist($_result['name'] , $_latlang) ;
 				
 				//company::add($_companyInfo, $_full);
 				
 				if(!empty($_companyID)){
 					//$_companyInfo['tags'] .= ',' . $_keyword_user;
 					$_tags = explode( ',',$_companyInfo['tags']);
-					$_newtags = array_merge($_tags , array( $_keyword_user));
+					$_newtagsAll = array_merge($_tags , array( $_keyword_user));
+					$_newtags = array_unique($_newtagsAll);
 					$_companyInfo['tags'] = implode(',', $_newtags);
 					
 					company::update($_companyInfo , $_companyID );

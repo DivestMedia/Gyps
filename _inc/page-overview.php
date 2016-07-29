@@ -1,15 +1,20 @@
 <div class="wrap">
 
-	<h1>Miner Overview</h1>
+	<h1>Miner Overview
+	
+	<? if(isset($_REQUEST['s'])){ ?>
+	 <span class="subtitle">Search results for &#8220;<?php _admin_search_query(); ?>&#8221;</span>
+	<? } ?>
+	</h1>
 	
 	<?php
 	global $CompanyListTable;
 	$CompanyListTable->prepare_items(); 
 	?>
-	<form method="post">
-		<input type="hidden" name="page" value="ttest_list_table">
+	<form method="get">
+		
 		<?php
-			//$CompanyListTable->search_box( 'search', 'search_id' );
+			$CompanyListTable->search_box( 'Search', 'company_name' );
 			$CompanyListTable->display(); 
 		?>
 	</form>

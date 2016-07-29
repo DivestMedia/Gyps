@@ -7,17 +7,14 @@ if($_GET['page'] == 'google-miner-task' or $_GET['page'] == 'google-miner-task-c
 }
 
 function gminer_menu_item(){
-	$hook = add_menu_page('Google Miner', 'Google Miner', 'manage_options', 'google-miner', 'gminer_page_overview' );
-    add_submenu_page('google-miner', 'Task Google Miner', 'Task', 'manage_options', 'google-miner-task' , gminer_page_task );
-    add_submenu_page('google-miner', 'Create Task Google Miner', 'Create New Task', 'manage_options', 'google-miner-task-create' , gminer_page_task_create );
-    add_submenu_page('google-miner', 'Settings - Google Miner', 'Settings', 'manage_options', 'google-miner-settings' ,  gminer_page_settings);
+	
+	$hook = add_menu_page('Google Yellow Page System', 'GYP System', 'manage_options', 'google-miner', 'gminer_page_overview' );
+    add_submenu_page('google-miner', 'Task Google Miner', 'Task', 'manage_options', 'google-miner-task' , 'gminer_page_task' );
+    add_submenu_page('google-miner', 'Create Task Google Miner', 'Create New Task', 'manage_options', 'google-miner-task-create' , 'gminer_page_task_create' );
+    add_submenu_page('google-miner', 'Settings - Google Miner', 'Settings', 'manage_options', 'google-miner-settings' ,  'gminer_page_settings');
 	add_action( "load-$hook", 'add_minertable_options');
 	
 	
-	
-/* 	$hook = add_menu_page( $pg_title, $menu_title, $cap, $slug, $function );
-add_action( "load-$hook", 'cmi_add_option' ); */
-
 }
 add_action("admin_menu", "gminer_menu_item", 20);
 
@@ -53,7 +50,7 @@ function gminer_page_settings(){
 }
 
 function gminer_page_task(){
-
+	
 	include_once(GMINER_PATH_DIR .'_inc/page-task.php');
 	exit;
 }

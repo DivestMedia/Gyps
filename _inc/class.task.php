@@ -16,6 +16,51 @@ class task_table extends WP_List_Table {
     }
 	
 	
+	public function views() {
+		global $wpdb;
+		
+		
+		
+		$taskID = $_GET['taskID'];
+		//$_keyword = $wpdb->get_var( "SELECT keyw FROM " . GMINER_TBL_TASK ." WHERE ID = ". $taskID );
+		
+		
+		if(isset($_GET['keyword'])){ // $_GET = Metro_Manila //underscore
+			$_keyword = str_replace('_', ' ', $_GET['keyword']);
+		}
+		
+		$_keywordClean = $_GET['keyword'];
+		/* echo $wpdb->last_error;
+		print_r($taskID);
+		print_r($_keyword);
+		 */
+		$sql = "SELECT DISTINCT(state) FROM ".GMINER_TBL_COMPANY .' ORDER BY state ASC';
+		$result = $wpdb->get_results( $sql, 'ARRAY_A' );
+		
+		
+		
+		
+		echo '<div style="float:right;">Export By State: <select id="export_by_state" name="export_by_state">';
+		echo '<option value="">--</option>';
+		foreach ( $result as $_row => $val ){
+		/* 	$_state = str_replace(' ', '_',);
+			$views[$_state] = '<a href="admin.php?page='.$_GET['page'].'&action=view&taskID='.$taskID.'&keyword='.$_keywordClean.'&state='.$_state.'" class="'
+				.($_stateClean == $_state ? 'current' : '') . '">'.$val['state'].' <span class="count">('.$val['totalEntry'].')</span></a>';
+		 */
+			echo '<option value="'.$val['state'].'">'.$val['state']. '</option>' ;
+		}
+		
+
+		echo "</select>\n
+			<input type='button' class='button-primary' name='export_state' id='export_state' value='Export State'>
+			<input type='button' class='button' name='export_full' id='export_full' value='Export Full'>
+			</div>";
+		
+		
+	}
+	
+	
+	
 	public static function get_tasks( $per_page = 20, $page_number = 1, $_task =0) {
 
 		global $wpdb;
@@ -83,21 +128,32 @@ class task_table extends WP_List_Table {
             'statecode'    => __( 'State', 'xyr' ),
             'country'    => __( 'Country', 'xyr' ),
             'counts' => __( 'Total', 'xyr' ),
-            'colorhex'    => __( 'ColorHEX', 'xyr' ),
+            //'colorhex'    => __( 'ColorHEX', 'xyr' ),
             'date_added'    => __( 'Date Added', 'xyr' ),
         );
          return $columns;
     }
 	
 	function column_keyw( $item ) {
+		global $wpdb;
+		
 		$delete_nonce = wp_create_nonce( 'xyr_delete_task' );
 		$title = '<strong>' . $item['keyw'] . '</strong>';
 		
 		$_keyword = str_replace(' ','_',$item['keyw']);
 		
+		
+		
+		$result = $wpdb->get_results("SELECT DISTINCT(statecode) FROM " . GMINER_TBL_TASK ." WHERE keyw ='".$item['keyw']."'", 'ARRAY_A' );
+		$_state = array();
+		foreach($result as $_row){
+			$_state[] = ucwords($_row['statecode']);
+		}
+		
 		$actions = [
 			'view' => sprintf( '<a href="?page=%s&action=%s&taskID=%s&keyword=%s">View</a>', esc_attr( $_REQUEST['page'] ), 'view', absint( $item['ID'] ) , $_keyword) , 
-			'export' => sprintf( '<a href="?page=%s&action=%s&taskID=%s" taskID="%s" class="export-task">Export</a>', esc_attr( $_REQUEST['page'] ), 'export', absint( $item['ID'] ), absint( $item['ID'] ) ),
+			'export' => sprintf( '<a href="?page=%s&action=%s&taskID=%s" taskID="%s" class="export-task" keys="%s" states="%s">Export</a>', esc_attr( $_REQUEST['page'] ), 'export', absint( $item['ID'] ), absint( $item['ID'] ) , $item['keyw'] , implode(',',$_state)  ),
+			'delete_opt' => sprintf( '<a href="#" taskID="%s" class="delete-opt">Delete Options</a>',  absint( $item['ID'] )), 
 			'delete' => sprintf( '<a href="?page=%s&action=%s&taskID=%s&_wpnonce=%s" taskID="%s" class="delete-task">Delete</a>', esc_attr( $_REQUEST['page'] ), 'delete', absint( $item['ID'] ), $delete_nonce , absint( $item['ID'] ))
 		];
 		return $title . $this->row_actions( $actions );
@@ -107,7 +163,11 @@ class task_table extends WP_List_Table {
 		
 		(int) $_count = $wpdb->get_var( "SELECT COUNT(*) FROM " . GMINER_TBL_COMPANY ." WHERE FIND_IN_SET('".$item['keyw']."', tags)");
 		
-		$_totalmines =  sprintf( '<a href="?page=%s&action=%s&taskID=%s&keyword=%s">'. $_count .'</a>', esc_attr( $_REQUEST['page'] ), 'view',  $item['ID'] , $_keyword) ;
+		$_keyword = str_replace(' ', '_', $item['keyw']);
+		
+		$_count = number_format($_count);
+		
+		$_totalmines =  sprintf( '<a href="?page=%s&action=%s&taskID=%s&keyword=%s">'.$_count .'</a>', esc_attr( $_REQUEST['page'] ), 'view', absint( $item['ID'] ) , $_keyword);
 		
 		return $_totalmines;
 	}
@@ -132,15 +192,19 @@ class task_table extends WP_List_Table {
 	function column_statecode( $item ) {
 		global $wpdb;
 		
-		$result = $wpdb->get_results("SELECT DISTINCT(statecode) FROM " . GMINER_TBL_TASK ." WHERE keyw ='".$item['keyw']."'", 'ARRAY_A' );
+		//$result = $wpdb->get_results("SELECT DISTINCT(statecode) FROM " . GMINER_TBL_TASK ." WHERE keyw ='".$item['keyw']."'", 'ARRAY_A' );
+		
+		$result = $wpdb->get_results("SELECT DISTINCT(state) FROM " . GMINER_TBL_COMPANY ." WHERE FIND_IN_SET('".$item['keyw']."', tags)", 'ARRAY_A' );
+
+		
 		
 		$_country = array();
 		
 		foreach($result as $_row){
-			$_country[] = '<li>'.ucwords($_row['statecode']) . '</li>';
+			$_country[] = '<a href="#">'.ucwords($_row['state']) . '</a>';
 		}
 		
-		return '<ol>'.implode('',$_country) .'</ol>';
+		return '<span>'.implode(', ',$_country) .'</span>';
 	}
 	
 	
@@ -182,6 +246,9 @@ class task_table extends WP_List_Table {
 		] );
 
 		$this->items = self::get_tasks( $per_page, $current_page , $taskID);
+		
+		$this->views();
+		
 		return $result;
 	}
 	

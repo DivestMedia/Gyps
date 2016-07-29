@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: Gyps
- * Version: 2.0-beta
- * Description: Google Yellow Page System
+ * Plugin Name: Google Map Miner
+ * Version: 1.0-beta
+ * Description: Search in Google Map via API
  * Author: Jenner F. Alagao
  *
  * License: GPLv2 or later
@@ -36,5 +36,6 @@ include_once( GMINER_PATH_DIR .'_inc/class.company.php');
 include_once( GMINER_PATH_DIR .'_inc/ajax.functions.php');
 include_once( GMINER_PATH_DIR .'_inc/class.task.php');
 include_once( GMINER_PATH_DIR .'_inc/functions.php');
+include_once( GMINER_PATH_DIR .'assets/phpexcel-1.8/PHPExcel.php');
 
 register_activation_hook( __FILE__, 'gminer_install' );

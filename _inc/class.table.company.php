@@ -113,6 +113,10 @@ class companies_table extends WP_List_Table {
 			$_where[] = " state='".$_state."' ";
 		}
 		
+		if(isset($_GET['s'])){ // SEARCH
+			$_where[] = " company_name LIKE '%".$_GET['s']."%' ";
+		}
+		
 		if(!empty($_where)){
 			$sql .= ' WHERE '. implode( ' AND ', $_where);
 		}
@@ -213,6 +217,16 @@ class companies_table extends WP_List_Table {
         );    
     }
 	
+	 public function search_box( $text, $input_id ) { ?>
+    <p class="search-box">
+      <label class="screen-reader-text" for="<?php echo $input_id ?>"><?php echo $text; ?>:</label>
+	  <input type="hidden" name="page" value="<?=$_REQUEST['page'];?>">
+      <input type="search" id="<?php echo $input_id ?>" name="s" value="<?php _admin_search_query(); ?>" placeholder="Search Company"/>
+      <?php submit_button( $text, 'button', false, false, array('id' => 'search-submit') ); ?>
+  </p>
+<?php }
+
+	
 	function prepare_items($_keyword = '', $per_page  = 20) {
 		/* global $screen_options_test;
 		$screen = get_current_screen();
@@ -256,6 +270,11 @@ class companies_table extends WP_List_Table {
 		
 		$sql = "SELECT COUNT(*) FROM " . GMINER_TBL_COMPANY;
 		$_where = array();
+		
+		
+		$_keyword = str_replace('_', ' ',$_keyword);
+		
+		
 		if ( ! empty( $_keyword ) ) {
 			$_where[] = " FIND_IN_SET('".$_keyword."', tags) ";
 		}
@@ -263,6 +282,10 @@ class companies_table extends WP_List_Table {
 		if(isset($_GET['state'])){ // $_GET = Metro_Manila //underscore
 			$_state = str_replace('_', ' ',$_GET['state']);
 			$_where[] = " state='".$_state."' ";
+		}
+		
+		if(isset($_GET['s'])){ // SEARCH
+			$_where[] = " company_name LIKE '%".$_GET['s']."%' ";
 		}
 		
 		if(!empty($_where)){
